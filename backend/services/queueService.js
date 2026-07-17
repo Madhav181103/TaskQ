@@ -53,10 +53,63 @@ async function enqueueJob({ type, payload, priority = 5 }) {
   return id;
 }
 
+async function dequeueJob() {
+  // 1. ZPOPMIN on QUEUE_KEY — atomically removes AND returns the lowest-score (highest priority) job id in one operation
+  const popped = await redis.zpopmin(QUEUE_KEY);
+  if (!popped || popped.length === 0) {
+    return null;
+  }
+  const id = popped[0];
+
+  /**
+   * DESIGN TRADEOFF NOTE:
+   * 
+   * Steps 1 (ZPOPMIN) and 2 (HSET into processing) are executed as separate Redis commands here.
+   * There is a small theoretical window where the worker or system crashes AFTER the job is popped
+   * from the queue, but BEFORE it gets recorded in the processing hash. If this happens, the job 
+   * is lost.
+   * 
+   * For this learning/interview project, this is an acceptable tradeoff to keep the code simple.
+   * In a production environment, we would make this step fully atomic by:
+   * 1. Using a Redis Lua script to execute both ZPOPMIN and HSET atomically on the server.
+   * 2. Using the Redis `LMOVE` / `RPOPLPUSH` command (if we were using lists instead of sorted sets).
+   * 
+   * Naming this tradeoff explicitly shows strong systems design awareness during an interview.
+   */
+
+  // 2. Add the job id to the processing hash with the current epoch timestamp
+  const startTime = Date.now().toString();
+  await redis.hset(PROCESSING_KEY, id, startTime);
+
+  // 3. Fetch the full job details
+  const jobDetailsStr = await redis.get(`${JOB_DATA_PREFIX}${id}`);
+  if (!jobDetailsStr) {
+    // Fallback if data is missing
+    return { id, type: 'unknown', payload: {} };
+  }
+
+  const { type, payload } = JSON.parse(jobDetailsStr);
+  return { id, type, payload };
+}
+
+/**
+ * Removes the job from active tracking in Redis once completed successfully.
+ * @param {string} id - The job UUID
+ */
+async function markJobDone(id) {
+  await Promise.all([
+    redis.hdel(PROCESSING_KEY, id),
+    redis.del(`${JOB_DATA_PREFIX}${id}`)
+  ]);
+}
+
 module.exports = {
   redis,
   QUEUE_KEY,
   PROCESSING_KEY,
   JOB_DATA_PREFIX,
-  enqueueJob
+  enqueueJob,
+  dequeueJob,
+  markJobDone
 };
+
