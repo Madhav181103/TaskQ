@@ -3,6 +3,8 @@ const { dequeueJob, markJobDone } = require('./services/queueService');
 const handlers = require('./handlers');
 const { updateJobStatus } = require('./services/jobStoreService');
 const { handleJobFailure } = require('./services/retryService');
+const { startScheduler } = require('./services/schedulerService');
+
 
 /**
  * Executes a single job from the queue if available.
@@ -91,8 +93,12 @@ async function startWorkerLoop(workerId) {
   }
 }
 
+// Start the background scheduler service to promote due delayed jobs
+startScheduler();
+
 // Concurrency pool initialization
 const concurrency = config.workerConcurrency;
+
 console.log(`[System] Initializing worker pool with concurrency = ${concurrency}`);
 
 const loops = [];
