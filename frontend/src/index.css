@@ -1,0 +1,81 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+:root {
+  /* Core Backgrounds */
+  --bg-dark: #06070a;
+  --bg-card: rgba(13, 16, 26, 0.6);
+  --bg-card-hover: rgba(20, 25, 41, 0.8);
+  --border-color: rgba(255, 255, 255, 0.05);
+  --border-color-hover: rgba(255, 255, 255, 0.12);
+  
+  /* Text */
+  --text-primary: #f8fafc;
+  --text-secondary: #94a3b8;
+  --text-muted: #475569;
+  
+  /* Status Color Palette (HSL Tailored) */
+  --color-queued: hsl(210, 100%, 60%);
+  --bg-queued: hsla(210, 100%, 60%, 0.1);
+  
+  --color-processing: hsl(280, 100%, 68%);
+  --bg-processing: hsla(280, 100%, 68%, 0.1);
+  
+  --color-completed: hsl(150, 90%, 42%);
+  --bg-completed: hsla(150, 90%, 42%, 0.1);
+  
+  --color-retrying: hsl(38, 100%, 55%);
+  --bg-retrying: hsla(38, 100%, 55%, 0.1);
+  
+  --color-dead-letter: hsl(355, 95%, 60%);
+  --bg-dead-letter: hsla(355, 95%, 60%, 0.1);
+  
+  /* Accent Elements */
+  --color-accent: hsl(245, 100%, 65%);
+  --color-accent-glow: hsla(245, 100%, 65%, 0.2);
+  
+  /* Fonts */
+  --font-sans: 'Outfit', 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+  
+  /* Utilities */
+  --glass-blur: blur(12px);
+  --radius-sm: 8px;
+  --radius-md: 14px;
+  --radius-lg: 20px;
+}
+
+/* Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: all 0.2s ease-out;
+}
+
+body {
+  background-color: var(--bg-dark);
+  color: var(--text-primary);
+  font-family: var(--font-sans);
+  min-height: 100vh;
+  overflow-x: hidden;
+  background-image: 
+    radial-gradient(circle at 10% 10%, hsla(245, 100%, 65%, 0.08) 0%, transparent 40%),
+    radial-gradient(circle at 90% 80%, hsla(280, 100%, 68%, 0.06) 0%, transparent 50%),
+    radial-gradient(circle at 50% 50%, #000000 0%, var(--bg-dark) 100%);
+  background-attachment: fixed;
+}
+
+/* Scrollbars */
+::-webkit-scrollbar {
+  width: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-dark);
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.06);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.15);
+}
