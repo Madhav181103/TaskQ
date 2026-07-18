@@ -3,6 +3,7 @@ const cors = require('cors');
 const config = require('./config');
 
 const jobRoutes = require('./routes/jobRoutes');
+const statsRoutes = require('./routes/statsRoutes');
 
 const app = express();
 
@@ -16,6 +17,8 @@ app.use(express.json());
 
 // API Routes
 app.use('/api', jobRoutes);
+app.use('/api', statsRoutes);
+
 
 // Health check endpoint
 
