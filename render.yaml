@@ -57,10 +57,7 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        fromService:
-          type: web
-          name: taskq-api
-          property: url
+        sync: false
 
 databases:
   # 5. Postgres Database
