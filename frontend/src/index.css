@@ -45,11 +45,24 @@
 }
 
 /* Base Styles */
-* {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
-  transition: all 0.2s ease-out;
+}
+
+/* Scope transitions to visual properties only — avoids layout jank */
+a, button, input, select, textarea,
+.dashboard-card, .stat-box, .btn-submit, .btn-refresh, .btn-retry,
+.dlq-job-card, .connection-badge {
+  transition: background-color 0.18s ease-out,
+              border-color 0.18s ease-out,
+              box-shadow 0.18s ease-out,
+              color 0.18s ease-out,
+              opacity 0.18s ease-out,
+              transform 0.18s ease-out;
 }
 
 body {
@@ -80,14 +93,17 @@ body {
   background: rgba(255, 255, 255, 0.15);
 }
 
-/* Cards & Containers */
+/* ─── Cards & Containers ──────────────────────────────────────────── */
 .dashboard-card {
   background: var(--bg-card);
   border: 1px solid var(--border-color);
   border-radius: var(--radius-md);
   padding: 24px;
   backdrop-filter: var(--glass-blur);
-  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+  -webkit-backdrop-filter: var(--glass-blur);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.03) inset,
+    0 8px 32px rgba(0, 0, 0, 0.35);
 }
 
 .dashboard-card:hover {
@@ -95,18 +111,61 @@ body {
   background: var(--bg-card-hover);
 }
 
+.card-header {
+  margin-bottom: 6px;
+}
+
 .card-header h2 {
-  font-size: 1.4rem;
+  font-size: 1.25rem;
   font-weight: 700;
   margin-bottom: 4px;
   color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
 .card-subtitle {
-  font-size: 0.85rem;
+  font-size: 0.82rem;
   color: var(--text-secondary);
   display: block;
   margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* Horizontal rule divider inside cards */
+.card-divider {
+  border: none;
+  border-top: 1px solid rgba(255, 255, 255, 0.05);
+  margin: 20px 0;
+}
+
+/* ─── Global Monospace: Job IDs, Payloads, Codes ─────────────────── */
+code, kbd, samp {
+  font-family: var(--font-mono);
+  font-size: 0.82em;
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 1px 6px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  /* Don't inherit the parent transition — code should be static */
+  transition: none;
+}
+
+pre {
+  font-family: var(--font-mono);
+  font-size: 0.82rem;
+  line-height: 1.65;
+  color: var(--text-secondary);
+  background: rgba(0, 0, 0, 0.32);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  overflow: auto;
+  white-space: pre;
+  tab-size: 2;
+  transition: none;
 }
 
 /* Forms */
@@ -141,16 +200,25 @@ body {
   color: var(--text-muted);
 }
 
-/* Form Inputs */
+/* ─── Form Inputs ────────────────────────────────────────────────── */
 .form-group input,
-.form-group select {
+.form-group select,
+.form-group textarea {
   background: rgba(0, 0, 0, 0.4);
   border: 1px solid rgba(255, 255, 255, 0.08);
   border-radius: var(--radius-sm);
-  padding: 12px 14px;
+  padding: 11px 13px;
   color: var(--text-primary);
-  font-size: 0.95rem;
+  font-size: 0.9rem;
+  font-family: var(--font-sans);
   outline: none;
+  width: 100%;
+  /* Inputs should show transition on border/shadow, not layout */
+  transition: border-color 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+
+.form-group input::placeholder {
+  color: var(--text-muted);
 }
 
 .form-group select option {
@@ -162,6 +230,12 @@ body {
 .form-group select:focus {
   border-color: var(--color-accent);
   box-shadow: 0 0 0 3px var(--color-accent-glow);
+}
+
+/* Number inputs: hide browser arrows for cleaner look */
+.form-group input[type='number']::-webkit-inner-spin-button,
+.form-group input[type='number']::-webkit-outer-spin-button {
+  opacity: 0.3;
 }
 
 /* Buttons */
@@ -423,3 +497,324 @@ body {
 .stat-box-dead-letter .status-indicator-dot { background-color: var(--color-dead-letter); }
 
 
+/* ═══════════════════════════════════════════════════════════════
+   Dead Letter Queue Panel
+   ═══════════════════════════════════════════════════════════════ */
+
+/* Card wrapper */
+.dlq-card {
+  container-type: inline-size;
+}
+
+/* Header layout */
+.dlq-header-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 4px;
+}
+
+.dlq-title-icon {
+  margin-right: 8px;
+}
+
+.dlq-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+
+/* Count badge */
+.dlq-count-badge {
+  background: var(--bg-dead-letter);
+  border: 1px solid rgba(239, 68, 68, 0.22);
+  color: var(--color-dead-letter);
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 4px 10px;
+  border-radius: 20px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* Refresh button */
+.btn-refresh {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: var(--radius-sm);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 8px 14px;
+  cursor: pointer;
+}
+
+.btn-refresh:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.08);
+  border-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-primary);
+}
+
+.btn-refresh:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.refresh-icon {
+  font-size: 1rem;
+  line-height: 1;
+  display: inline-block;
+}
+
+.refresh-icon.spinning {
+  animation: spin 0.8s linear infinite;
+}
+
+/* Job list */
+.dlq-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-top: 8px;
+}
+
+/* Individual job card */
+.dlq-job-card {
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(239, 68, 68, 0.12);
+  border-left: 4px solid var(--color-dead-letter);
+  border-radius: var(--radius-md);
+  padding: 18px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+
+.dlq-job-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top left, hsla(355, 95%, 60%, 0.04) 0%, transparent 60%);
+  pointer-events: none;
+}
+
+.dlq-job-card:hover {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(0, 0, 0, 0.32);
+}
+
+/* Success flash animation */
+@keyframes success-flash {
+  0%   { border-color: var(--color-completed); background: hsla(150, 90%, 42%, 0.08); }
+  60%  { border-color: var(--color-completed); background: hsla(150, 90%, 42%, 0.12); }
+  100% { border-color: rgba(239, 68, 68, 0.12); background: rgba(0, 0, 0, 0.25); }
+}
+
+.dlq-job-success-flash {
+  animation: success-flash 0.9s ease-out forwards;
+}
+
+/* Job meta row */
+.dlq-job-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.dlq-job-meta-left {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.dlq-job-type {
+  background: var(--bg-dead-letter);
+  color: var(--color-dead-letter);
+  border: 1px solid rgba(239, 68, 68, 0.18);
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  padding: 3px 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.dlq-job-id code {
+  font-family: var(--font-mono);
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  background: rgba(0, 0, 0, 0.3);
+  padding: 2px 7px;
+  border-radius: 4px;
+}
+
+.dlq-job-timestamp {
+  font-size: 0.78rem;
+  color: var(--text-muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+}
+
+/* Error block */
+.dlq-error-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dlq-error-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--color-dead-letter);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dlq-error-text {
+  font-size: 0.88rem;
+  color: #fca5a5;
+  background: var(--bg-dead-letter);
+  border: 1px solid rgba(239, 68, 68, 0.15);
+  border-radius: var(--radius-sm);
+  padding: 10px 14px;
+  line-height: 1.5;
+  word-break: break-word;
+}
+
+/* Payload block */
+.dlq-payload-block {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.dlq-payload-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.dlq-payload-pre {
+  /* Inherits font, color, background, border, padding from global pre rule */
+  max-height: 160px;
+  overflow-y: auto;
+}
+
+
+/* Footer row */
+.dlq-job-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding-top: 4px;
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+}
+
+/* Feedback text */
+.dlq-feedback {
+  font-size: 0.83rem;
+  font-weight: 500;
+}
+
+.dlq-feedback-success {
+  color: var(--color-completed);
+}
+
+.dlq-feedback-error {
+  color: var(--color-dead-letter);
+}
+
+/* Retry button */
+.btn-retry {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  background: var(--bg-dead-letter);
+  border: 1px solid rgba(239, 68, 68, 0.25);
+  border-radius: var(--radius-sm);
+  color: var(--color-dead-letter);
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 8px 16px;
+  cursor: pointer;
+}
+
+.btn-retry:hover:not(:disabled) {
+  background: rgba(239, 68, 68, 0.18);
+  border-color: rgba(239, 68, 68, 0.45);
+  color: #fca5a5;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+}
+
+.btn-retry:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-retry:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+
+.retry-arrow {
+  font-size: 1rem;
+  line-height: 1;
+}
+
+/* Smaller spinner variant for inline use */
+.spinner-sm {
+  width: 12px;
+  height: 12px;
+  border-width: 2px;
+}
+
+/* Empty State */
+.dlq-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 56px 20px;
+  gap: 12px;
+  text-align: center;
+}
+
+.dlq-empty-icon {
+  font-size: 3rem;
+  line-height: 1;
+  filter: drop-shadow(0 0 16px rgba(16, 185, 129, 0.4));
+  animation: float 3s ease-in-out infinite;
+}
+
+@keyframes float {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-6px); }
+}
+
+.dlq-empty-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: var(--color-completed);
+}
+
+.dlq-empty-msg {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  max-width: 360px;
+  line-height: 1.6;
+}

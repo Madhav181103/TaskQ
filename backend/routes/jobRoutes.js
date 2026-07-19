@@ -9,9 +9,9 @@ router.post('/jobs', async (req, res, next) => {
   try {
     const { type, payload, priority } = req.body;
 
-    // 1. Validate job type
-    if (!type || !handlers[type]) {
-      return res.status(400).json({ error: `Unknown or missing job type: "${type}"` });
+    // 1. Validate job type is provided
+    if (!type) {
+      return res.status(400).json({ error: 'Job type is required.' });
     }
 
     // 2. Validate payload

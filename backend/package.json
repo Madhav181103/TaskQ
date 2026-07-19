@@ -6,8 +6,11 @@
   "scripts": {
     "start": "node server.js",
     "dev": "nodemon server.js",
-    "worker": "node worker.js"
+    "worker": "node worker.js",
+    "bulk": "node scripts/bulkSubmit.js",
+    "demo": "node scripts/demoSubmit.js"
   },
+
   "dependencies": {
     "cors": "^2.8.5",
     "dotenv": "^16.4.5",

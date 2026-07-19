@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import api from '../api';
 
 /**
@@ -7,7 +7,7 @@ import api from '../api';
  * Fetches job stats on mount and polls every 2 seconds.
  * Renders status aggregates in a responsive grid layout.
  */
-function QueueStatsPanel() {
+function QueueStatsPanel({ refreshRef }) {
   const [stats, setStats] = useState({
     queued: 0,
     processing: 0,
@@ -18,7 +18,7 @@ function QueueStatsPanel() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  const fetchStats = async () => {
+  const fetchStats = useCallback(async () => {
     try {
       const response = await api.get('/stats');
       setStats(response.data);
@@ -29,9 +29,14 @@ function QueueStatsPanel() {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
   useEffect(() => {
+    // Expose fetchStats to parent via ref for immediate post-submit refresh
+    if (refreshRef) {
+      refreshRef.current = fetchStats;
+    }
+
     // Immediate load
     fetchStats();
 
@@ -40,7 +45,7 @@ function QueueStatsPanel() {
 
     // Unmount cleanup
     return () => clearInterval(interval);
-  }, []);
+  }, [fetchStats, refreshRef]);
 
   const statCards = [
     { label: 'Queued', key: 'queued', colorClass: 'queued', desc: 'Pending Execution' },

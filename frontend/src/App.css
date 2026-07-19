@@ -1,1 +1,325 @@
-/* App layout styles */
+/* ═══════════════════════════════════════════════════════════════════════
+   App Shell & Dashboard Layout
+   Chunk 7.5 — Tie It Together
+   ═══════════════════════════════════════════════════════════════════════ */
+
+/* ── Root ───────────────────────────────────────────────────────────── */
+.app-root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ── Sticky Header ──────────────────────────────────────────────────── */
+.app-header {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  background: rgba(6, 7, 10, 0.80);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.07);
+  box-shadow: 0 1px 0 rgba(255, 255, 255, 0.03), 0 4px 24px rgba(0, 0, 0, 0.4);
+}
+
+.app-header-inner {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 28px;
+  height: 60px;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  gap: 16px;
+}
+
+/* Logo — left */
+.app-logo {
+  display: flex;
+  align-items: center;
+  gap: 9px;
+  justify-self: start;
+}
+
+.app-logo-icon {
+  font-size: 1.25rem;
+  filter: drop-shadow(0 0 10px rgba(99, 102, 241, 0.7));
+  display: inline-block;
+  animation: logo-pulse 3s ease-in-out infinite;
+}
+
+@keyframes logo-pulse {
+  0%, 100% { filter: drop-shadow(0 0 6px rgba(99, 102, 241, 0.6)); }
+  50%       { filter: drop-shadow(0 0 14px rgba(139, 92, 246, 0.9)); }
+}
+
+.app-logo-name {
+  font-family: var(--font-sans);
+  font-size: 1.15rem;
+  font-weight: 800;
+  background: linear-gradient(130deg, #818cf8 0%, #c084fc 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  letter-spacing: -0.02em;
+}
+
+/* Title — center */
+.app-header-center {
+  justify-self: center;
+}
+
+.app-header-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  margin: 0;
+  /* override any h1 sizing from global resets */
+  line-height: 1;
+}
+
+/* Right slot */
+.app-header-right {
+  justify-self: end;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.app-env-badge {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  padding: 3px 9px;
+  border-radius: 4px;
+  background: rgba(99, 102, 241, 0.12);
+  border: 1px solid rgba(99, 102, 241, 0.25);
+  color: #a5b4fc;
+  text-transform: uppercase;
+}
+
+/* ── Main Content ───────────────────────────────────────────────────── */
+.app-main {
+  flex: 1;
+  padding: 28px 28px 64px;
+}
+
+/* ── Dashboard Layout ───────────────────────────────────────────────── */
+.dashboard-layout {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+/* Each full-width row */
+.dashboard-row {
+  width: 100%;
+}
+
+/* Bottom row: two-column grid */
+.dashboard-row--bottom {
+  display: grid;
+  grid-template-columns: 380px 1fr;
+  gap: 20px;
+  align-items: start;
+}
+
+.dashboard-col {
+  min-width: 0; /* prevent grid blowout */
+}
+
+/* .dashboard-col--form is naturally constrained by grid-template-columns; .dashboard-col--dlq fills remaining space */
+
+/* ── Responsive: collapse to single column at ≤ 860px ──────────────── */
+@media (max-width: 860px) {
+  .app-header-inner {
+    grid-template-columns: 1fr auto;
+    padding: 0 16px;
+  }
+  .app-header-center { display: none; } /* too crowded on mobile */
+
+  .app-main {
+    padding: 16px 16px 48px;
+  }
+
+  .dashboard-row--bottom {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .app-header-inner {
+    grid-template-columns: 1fr;
+    height: auto;
+    padding: 12px 16px;
+  }
+  .app-header-right { display: none; }
+}
+
+/* ── Footer ─────────────────────────────────────────────────────────── */
+.app-footer {
+  border-top: 1px solid rgba(255, 255, 255, 0.04);
+  padding: 16px 28px;
+  text-align: center;
+}
+
+.app-footer-text {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  letter-spacing: 0.04em;
+}
+
+/* ── Worker Terminal ────────────────────────────────────────────────── */
+.terminal-card {
+  margin-top: 10px;
+}
+
+.terminal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 16px;
+}
+
+.terminal-title-wrap {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.terminal-icon {
+  font-size: 1.5rem;
+}
+
+.terminal-controls {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.autoscroll-toggle {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.autoscroll-toggle input {
+  cursor: pointer;
+  accent-color: #6366f1;
+}
+
+.terminal-viewport {
+  background: #090b10;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 8px;
+  height: 250px;
+  overflow-y: auto;
+  font-family: 'Consolas', 'Fira Code', 'Courier New', monospace;
+  font-size: 0.85rem;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.6);
+}
+
+/* Custom Scrollbar for Terminal */
+.terminal-viewport::-webkit-scrollbar {
+  width: 8px;
+}
+.terminal-viewport::-webkit-scrollbar-track {
+  background: rgba(255, 255, 255, 0.02);
+  border-radius: 4px;
+}
+.terminal-viewport::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.15);
+  border-radius: 4px;
+}
+.terminal-viewport::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.25);
+}
+
+.terminal-loading,
+.terminal-empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  gap: 12px;
+}
+
+.terminal-logs {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.terminal-line {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  line-height: 1.5;
+  word-break: break-all;
+}
+
+.terminal-prompt {
+  color: #6366f1;
+  font-weight: bold;
+  user-select: none;
+}
+
+.terminal-text {
+  white-space: pre-wrap;
+}
+
+/* Log Syntax Coloring */
+.terminal-line-log {
+  color: #e2e8f0;
+}
+
+.terminal-line-error {
+  color: #ef4444;
+  font-weight: 500;
+  background: rgba(239, 68, 68, 0.08);
+  padding: 2px 6px;
+  border-radius: 4px;
+  border-left: 3px solid #ef4444;
+}
+
+.terminal-line-scheduler {
+  color: #f59e0b; /* yellow-orange */
+}
+
+.terminal-line-system {
+  color: #a855f7; /* violet */
+}
+
+.terminal-line-worker-init {
+  color: #3b82f6; /* bright blue */
+}
+
+.terminal-line-dequeue {
+  color: #06b6d4; /* cyan */
+}
+
+.terminal-line-success {
+  color: #10b981; /* bright emerald green */
+  font-weight: 500;
+}
+
+.terminal-line-fail {
+  color: #f97316; /* orange */
+}

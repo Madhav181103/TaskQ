@@ -1,9 +1,30 @@
 const config = require('./config');
-const { dequeueJob, markJobDone } = require('./services/queueService');
+const { dequeueJob, markJobDone, redis } = require('./services/queueService');
 const handlers = require('./handlers');
 const { updateJobStatus } = require('./services/jobStoreService');
 const { handleJobFailure } = require('./services/retryService');
 const { startScheduler } = require('./services/schedulerService');
+
+// Capture console logs and stream them to Redis for the frontend dashboard terminal.
+// Keeps the latest 100 log messages in taskq:logs.
+const originalLog = console.log;
+const originalError = console.error;
+
+console.log = (...args) => {
+  originalLog(...args);
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+  redis.lpush('taskq:logs', `[LOG] ${message}`).then(() => {
+    redis.ltrim('taskq:logs', 0, 99);
+  }).catch(err => originalError('Log capture failed:', err));
+};
+
+console.error = (...args) => {
+  originalError(...args);
+  const message = args.map(arg => typeof arg === 'object' ? JSON.stringify(arg) : arg).join(' ');
+  redis.lpush('taskq:logs', `[ERROR] ${message}`).then(() => {
+    redis.ltrim('taskq:logs', 0, 99);
+  }).catch(err => originalError('Log capture failed:', err));
+};
 
 
 /**
