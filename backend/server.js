@@ -31,7 +31,10 @@ app.get('/', (req, res) => {
 // forwarded via next(err) from any route or middleware land here.
 app.use(errorHandler);
 
+const pool = require('./db/pool');
+
 // Listen on configured port
-app.listen(config.port, () => {
+app.listen(config.port, async () => {
   console.log(`Server is running on port ${config.port}`);
+  await pool.initSchema();
 });
