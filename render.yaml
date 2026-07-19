@@ -48,8 +48,9 @@ services:
     ipAllowList: [] # Only allow internal connections within Render
 
   # 4. Frontend static site
-  - type: static
+  - type: web
     name: taskq-frontend
+    runtime: static
     plan: free
     rootDir: frontend
     buildCommand: npm install && npm run build
