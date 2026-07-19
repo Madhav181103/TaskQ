@@ -38,3 +38,10 @@ app.listen(config.port, async () => {
   console.log(`Server is running on port ${config.port}`);
   await pool.initSchema();
 });
+
+// In production (e.g., Render Free Tier), we run the background worker inside the same process
+// to avoid requiring a separate, paid Render worker service.
+if (process.env.NODE_ENV === 'production' || process.env.RUN_WORKER === 'true') {
+  console.log('[System] Production environment detected. Booting in-process background worker...');
+  require('./worker');
+}
