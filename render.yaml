@@ -11,9 +11,14 @@ services:
       - key: PORT
         value: 10000
       - key: DATABASE_URL
-        sync: false
+        fromDatabase:
+          name: taskq-db
+          property: connectionString
       - key: REDIS_URL
-        sync: false
+        fromService:
+          type: redis
+          name: taskq-redis
+          property: connectionString
       - key: CLIENT_URL
         value: https://taskq-frontend.onrender.com
       - key: NODE_ENV
@@ -27,7 +32,13 @@ services:
       - key: PROCESSING_TIMEOUT_SECONDS
         value: 30
 
-  # 2. Frontend static site
+  # 2. Redis Instance
+  - type: redis
+    name: taskq-redis
+    plan: free
+    ipAllowList: []
+
+  # 3. Frontend static site
   - type: web
     name: taskq-frontend
     runtime: static
@@ -36,4 +47,9 @@ services:
     staticPublishPath: ./dist
     envVars:
       - key: VITE_API_URL
-        sync: false
+        value: https://taskq-api.onrender.com
+
+databases:
+  # 4. Postgres Database
+  - name: taskq-db
+    plan: free
