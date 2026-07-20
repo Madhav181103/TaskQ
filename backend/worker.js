@@ -4,6 +4,7 @@ const handlers = require('./handlers');
 const { updateJobStatus } = require('./services/jobStoreService');
 const { handleJobFailure } = require('./services/retryService');
 const { startScheduler } = require('./services/schedulerService');
+const workerState = require('./services/workerStateService');
 
 // Capture console logs and stream them to Redis for the frontend dashboard terminal.
 // Keeps the latest 100 log messages in taskq:logs.
@@ -88,6 +89,12 @@ async function startWorkerLoop(workerId) {
   
   while (true) {
     try {
+      // If the worker is paused via the dashboard, skip processing
+      if (workerState.isPaused()) {
+        await new Promise(resolve => setTimeout(resolve, 500));
+        continue;
+      }
+
       const processed = await processOneJob();
       
       // If queue is empty, wait for a short polling delay before checking again

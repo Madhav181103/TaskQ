@@ -5,14 +5,17 @@ import api from '../api';
  * WorkerTerminalPanel Component
  * 
  * Periodically polls the backend for worker logs and renders them in a styled
- * terminal panel. Features auto-scroll, log clearing, and colored log types.
+ * terminal panel. Features pause/resume worker control, auto-scroll toggle,
+ * log clearing, and colored log types.
  */
 function WorkerTerminalPanel() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [autoScroll, setAutoScroll] = useState(false);
-  
+  const [workerPaused, setWorkerPaused] = useState(false);
+  const [workerActionLoading, setWorkerActionLoading] = useState(false);
+
   const terminalEndRef = useRef(null);
   const logContainerRef = useRef(null);
 
@@ -29,11 +32,26 @@ function WorkerTerminalPanel() {
     }
   }, []);
 
+  // Poll worker status every 2 seconds
+  const fetchWorkerStatus = useCallback(async () => {
+    try {
+      const response = await api.get('/worker/status');
+      setWorkerPaused(response.data.paused);
+    } catch (err) {
+      console.error('[WorkerTerminalPanel] Error fetching worker status:', err);
+    }
+  }, []);
+
   useEffect(() => {
     fetchLogs();
-    const interval = setInterval(fetchLogs, 1000);
-    return () => clearInterval(interval);
-  }, [fetchLogs]);
+    fetchWorkerStatus();
+    const logsInterval = setInterval(fetchLogs, 1000);
+    const statusInterval = setInterval(fetchWorkerStatus, 2000);
+    return () => {
+      clearInterval(logsInterval);
+      clearInterval(statusInterval);
+    };
+  }, [fetchLogs, fetchWorkerStatus]);
 
   // Scroll to bottom if auto-scroll is enabled
   useEffect(() => {
@@ -41,6 +59,24 @@ function WorkerTerminalPanel() {
       terminalEndRef.current.scrollIntoView({ behavior: 'smooth' });
     }
   }, [logs, autoScroll]);
+
+  // Toggle worker pause/resume
+  const handleWorkerToggle = async () => {
+    setWorkerActionLoading(true);
+    try {
+      if (workerPaused) {
+        await api.post('/worker/resume');
+        setWorkerPaused(false);
+      } else {
+        await api.post('/worker/pause');
+        setWorkerPaused(true);
+      }
+    } catch (err) {
+      console.error('[WorkerTerminalPanel] Error toggling worker:', err);
+    } finally {
+      setWorkerActionLoading(false);
+    }
+  };
 
   // Request Redis log clearing on the backend
   const handleClearDbLogs = async () => {
@@ -103,6 +139,11 @@ function WorkerTerminalPanel() {
           <div className="live-status-wrap">
             {error ? (
               <span className="connection-badge offline">Offline</span>
+            ) : workerPaused ? (
+              <span className="connection-badge paused">
+                <span className="pulse-dot paused-dot"></span>
+                Paused
+              </span>
             ) : (
               <span className="connection-badge online">
                 <span className="pulse-dot"></span>
@@ -110,17 +151,31 @@ function WorkerTerminalPanel() {
               </span>
             )}
           </div>
-          
+
+          {/* Pause / Resume Worker Button */}
+          <button
+            className={`btn btn--sm worker-toggle-btn ${workerPaused ? 'btn--resume' : 'btn--pause'}`}
+            onClick={handleWorkerToggle}
+            disabled={workerActionLoading || !!error}
+            title={workerPaused ? 'Resume worker — it will start processing queued jobs' : 'Pause worker — jobs will queue up but not be processed'}
+          >
+            {workerActionLoading
+              ? '...'
+              : workerPaused
+              ? '▶ Resume Worker'
+              : '⏸ Pause Worker'}
+          </button>
+
           <label className="autoscroll-toggle">
-            <input 
-              type="checkbox" 
-              checked={autoScroll} 
-              onChange={(e) => setAutoScroll(e.target.checked)} 
+            <input
+              type="checkbox"
+              checked={autoScroll}
+              onChange={(e) => setAutoScroll(e.target.checked)}
             />
             <span>Auto-scroll</span>
           </label>
 
-          <button 
+          <button
             className="btn btn--secondary btn--sm clear-btn"
             onClick={handleClearDbLogs}
             disabled={logs.length === 0}

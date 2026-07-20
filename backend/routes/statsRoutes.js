@@ -3,6 +3,7 @@ const router = express.Router();
 const { getJobCountsByStatus } = require('../services/jobStoreService');
 const { getDeadLetterJobs, retryDeadLetterJob } = require('../services/deadLetterService');
 const { redis } = require('../services/queueService');
+const workerState = require('../services/workerStateService');
 
 // GET /api/stats - Get count of all jobs grouped by status for dashboard charts/summaries
 router.get('/stats', async (req, res, next) => {
@@ -58,6 +59,23 @@ router.delete('/logs', async (req, res, next) => {
   } catch (error) {
     next(error);
   }
+});
+
+// GET /api/worker/status - Returns whether the worker is currently paused
+router.get('/worker/status', (req, res) => {
+  res.json(workerState.getStatus());
+});
+
+// POST /api/worker/pause - Pause all worker loops
+router.post('/worker/pause', (req, res) => {
+  workerState.pause();
+  res.json({ paused: true, message: 'Worker paused successfully.' });
+});
+
+// POST /api/worker/resume - Resume all worker loops
+router.post('/worker/resume', (req, res) => {
+  workerState.resume();
+  res.json({ paused: false, message: 'Worker resumed successfully.' });
 });
 
 module.exports = router;
