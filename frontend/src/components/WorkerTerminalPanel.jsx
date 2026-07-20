@@ -11,7 +11,7 @@ function WorkerTerminalPanel() {
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [autoScroll, setAutoScroll] = useState(true);
+  const [autoScroll, setAutoScroll] = useState(false);
   
   const terminalEndRef = useRef(null);
   const logContainerRef = useRef(null);
